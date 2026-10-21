@@ -142,7 +142,7 @@ if (!reducedMotion) {
   gsap.ticker.add((time) => lenis?.raf(time * 1000));
   gsap.ticker.lagSmoothing(0);
 
-  gsap.utils.toArray<HTMLElement>('.section-heading h2, .profile__copy h2, .contact h2').forEach((heading) => {
+  gsap.utils.toArray<HTMLElement>('.section-heading h2, .profile__copy h2, .community__header h2, .contact h2').forEach((heading) => {
     gsap.from(heading, { yPercent: 24, opacity: 0, duration: 1, scrollTrigger: { trigger: heading, start: 'top 84%' } });
   });
 
@@ -445,6 +445,66 @@ if (focusGame && focusStage && focusReticle && bookingLink) {
   bookingLink.addEventListener('focus', lockFocus);
 }
 
+const storySteps = Array.from(document.querySelectorAll<HTMLElement>('[data-story-step]'));
+const storyImages = Array.from(document.querySelectorAll<HTMLElement>('[data-story-image]'));
+const storyCount = document.querySelector<HTMLElement>('[data-story-count]');
+let storyObserver: IntersectionObserver | undefined;
+
+const activateStoryStep = (index: number) => {
+  storySteps.forEach((step, stepIndex) => step.classList.toggle('is-active', stepIndex === index));
+  storyImages.forEach((image, imageIndex) => image.classList.toggle('is-active', imageIndex === index));
+  if (storyCount) storyCount.textContent = `${String(index + 1).padStart(2, '0')} / ${String(storySteps.length).padStart(2, '0')}`;
+};
+
+if (storySteps.length) {
+  storyObserver = new IntersectionObserver((entries) => {
+    const activeEntry = entries
+      .filter((entry) => entry.isIntersecting)
+      .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+    if (!activeEntry) return;
+    activateStoryStep(storySteps.indexOf(activeEntry.target as HTMLElement));
+  }, { rootMargin: '-28% 0px -42%', threshold: [0, .2, .5, .8] });
+  storySteps.forEach((step, index) => {
+    storyObserver?.observe(step);
+    step.addEventListener('focus', () => activateStoryStep(index));
+    step.addEventListener('pointerdown', () => activateStoryStep(index));
+  });
+}
+
+const communityRail = document.querySelector<HTMLElement>('[data-community-rail]');
+const communityCards = Array.from(document.querySelectorAll<HTMLElement>('.milestone'));
+const communityCurrent = document.querySelector<HTMLElement>('[data-community-current]');
+const communityPrev = document.querySelector<HTMLButtonElement>('[data-community-prev]');
+const communityNext = document.querySelector<HTMLButtonElement>('[data-community-next]');
+let communityIndex = 0;
+
+const updateCommunityRail = () => {
+  if (!communityRail || !communityCards.length) return;
+  const railLeft = communityRail.getBoundingClientRect().left;
+  communityIndex = communityCards.reduce((nearest, card, index) => {
+    const distance = Math.abs(card.getBoundingClientRect().left - railLeft);
+    return distance < nearest.distance ? { index, distance } : nearest;
+  }, { index: 0, distance: Number.POSITIVE_INFINITY }).index;
+  if (communityCurrent) communityCurrent.textContent = String(communityIndex + 1).padStart(2, '0');
+  if (communityPrev) communityPrev.disabled = communityIndex === 0;
+  if (communityNext) communityNext.disabled = communityIndex === communityCards.length - 1;
+};
+
+const moveCommunityRail = (direction: number) => {
+  const target = Math.max(0, Math.min(communityCards.length - 1, communityIndex + direction));
+  communityCards[target]?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', inline: 'start', block: 'nearest' });
+};
+
+communityPrev?.addEventListener('click', () => moveCommunityRail(-1));
+communityNext?.addEventListener('click', () => moveCommunityRail(1));
+communityRail?.addEventListener('scroll', updateCommunityRail, { passive: true });
+communityRail?.addEventListener('keydown', (event) => {
+  if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+  event.preventDefault();
+  moveCommunityRail(event.key === 'ArrowRight' ? 1 : -1);
+});
+updateCommunityRail();
+
 const animatedRegions = Array.from(document.querySelectorAll<HTMLElement>('.constellation, .contact'));
 const motionObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry) => entry.target.classList.toggle('is-in-view', entry.isIntersecting));
@@ -455,6 +515,7 @@ window.addEventListener('load', () => ScrollTrigger.refresh());
 window.addEventListener('pagehide', () => {
   lenis?.destroy();
   sectionObserver.disconnect();
+  storyObserver?.disconnect();
   motionObserver.disconnect();
   ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
 });

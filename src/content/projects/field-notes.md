@@ -7,6 +7,7 @@ role: "Photographer, cinematographer & drone operator"
 summary: "Aerial studies, portraits and fragments from the road—images made from the instinct to find scale inside a human moment."
 cover: "/images/atlantic-rocks.jpg"
 gallery:
+  - "/images/profile/field-notes-aerial-1440.jpg"
   - "/images/kwasi-portrait.jpg"
   - "/images/aerial-collective.jpg"
   - "/images/cape-town-flight.jpg"

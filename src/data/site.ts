@@ -10,10 +10,11 @@ export const siteConfig = {
   handle: '@akyems_very_own',
   bookingEmail: 'quillerthelon@gmail.com',
   bookingSubject: 'Project inquiry — Kwasi AD',
+  collaborationSubject: 'Speaking or community collaboration — Kwasi AD',
   instagramUrl: 'https://www.instagram.com/akyems_very_own/',
   location: 'Available worldwide',
   description:
-    'A multidisciplinary creative working across cinematography, photography, cultural campaigns and digital experiences.',
+    'An independent creative technologist and visual storyteller working across cinematography, photography, digital experience and cultural strategy.',
   disciplines: ['Cinematography', 'Photography', 'Digital experiences'],
   availability: 'Selected commissions · 2026'
 } as const;

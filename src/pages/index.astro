@@ -4,6 +4,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Loader from '../components/Loader.astro';
 import Nav from '../components/Nav.astro';
 import { creativeTools, siteConfig } from '../data/site';
+import { getProfileMedia, milestones, profileStory } from '../data/profile';
 
 const projects = (await getCollection('projects')).sort((a, b) => a.data.featuredOrder - b.data.featuredOrder);
 const base = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/`;
@@ -16,6 +17,14 @@ const media = [
   { image: 'afrofuture-caribbean.jpg', label: 'Crowd energy', meta: 'AfroFuture / Campaign', project: projects[1] }
 ];
 const bookingHref = `mailto:${siteConfig.bookingEmail}?subject=${encodeURIComponent(siteConfig.bookingSubject)}`;
+const collaborationHref = `mailto:${siteConfig.bookingEmail}?subject=${encodeURIComponent(siteConfig.collaborationSubject)}`;
+const profileImage = (file: string, width: 720 | 1440, format: 'avif' | 'webp' | 'jpg') =>
+  `${base}images/profile/${file}-${width}.${format}`;
+const communityFrames = [
+  getProfileMedia('generation-unlimited'),
+  getProfileMedia('generation-community'),
+  getProfileMedia('bica-panel')
+];
 ---
 
 <BaseLayout>
@@ -149,25 +158,134 @@ const bookingHref = `mailto:${siteConfig.bookingEmail}?subject=${encodeURICompon
     </section>
 
     <section class="profile" id="profile" aria-labelledby="profile-title">
-      <div class="profile__portrait">
-        <img src={`${base}images/kwasi-portrait.jpg`} alt="Kwasi AD in a red and checked outfit" loading="lazy" />
-        <span>KWASI AD / PORTRAIT</span>
+      <div class="profile__intro">
+        <div class="profile__portrait-stack" aria-label="Portraits from the Kwasi AD archive">
+          {[getProfileMedia('yellow-portrait'), getProfileMedia('monochrome-portrait')].map((image, index) => (
+            <figure class:list={['profile__portrait', { 'profile__portrait--inset': index === 1 }]}>
+              <picture>
+                <source type="image/avif" srcset={`${profileImage(image.file, 720, 'avif')} 720w, ${profileImage(image.file, 1440, 'avif')} 1440w`} sizes={index === 0 ? '(max-width: 800px) 88vw, 38vw' : '(max-width: 800px) 42vw, 16vw'} />
+                <source type="image/webp" srcset={`${profileImage(image.file, 720, 'webp')} 720w, ${profileImage(image.file, 1440, 'webp')} 1440w`} sizes={index === 0 ? '(max-width: 800px) 88vw, 38vw' : '(max-width: 800px) 42vw, 16vw'} />
+                <img src={profileImage(image.file, 1440, 'jpg')} alt={image.alt} width={image.width} height={image.height} loading="lazy" style={`--focal-point:${image.focalPoint}`} />
+              </picture>
+              <figcaption><span>{image.caption}</span><span>© {image.credit}</span></figcaption>
+            </figure>
+          ))}
+        </div>
+        <div class="profile__copy">
+          <p class="kicker">{profileStory.eyebrow}</p>
+          <h2 id="profile-title">{profileStory.title}</h2>
+          <p class="profile__role">Independent creative technologist<br />and visual storyteller.</p>
+          <div class="profile__biography">
+            {profileStory.biography.map((paragraph) => <p>{paragraph}</p>)}
+          </div>
+          <dl>
+            <div><dt>Focus</dt><dd>Culture, music, people, place</dd></div>
+            <div><dt>Instruments</dt><dd>Camera, drone, edit, interface</dd></div>
+            <div><dt>Based</dt><dd>Gaborone · Working worldwide</dd></div>
+          </dl>
+        </div>
       </div>
-      <div class="profile__copy">
-        <p class="kicker">04 / Profile</p>
-        <h2 id="profile-title">I build visual worlds for culture in motion.</h2>
-        <p>{siteConfig.description}</p>
-        <p>My practice moves between the precision of a designed interface and the instinct of a live frame—always looking for the human pulse inside the spectacle.</p>
-        <dl>
-          <div><dt>Focus</dt><dd>Culture, music, people, place</dd></div>
-          <div><dt>Tools</dt><dd>Camera, drone, edit, interface</dd></div>
-          <div><dt>Based</dt><dd>{siteConfig.location}</dd></div>
-        </dl>
+
+      <div class="name-story" data-name-story>
+        <div class="name-story__sticky">
+          <p class="kicker">The name / The compass</p>
+          <div class="name-story__media" aria-hidden="true">
+            {profileStory.nameChapters.map((chapter, index) => {
+              const image = getProfileMedia(chapter.mediaId);
+              return (
+                <picture class:list={['name-story__image', { 'is-active': index === 0 }]} data-story-image={index}>
+                  <source type="image/avif" srcset={`${profileImage(image.file, 720, 'avif')} 720w, ${profileImage(image.file, 1440, 'avif')} 1440w`} sizes="(max-width: 800px) 100vw, 46vw" />
+                  <source type="image/webp" srcset={`${profileImage(image.file, 720, 'webp')} 720w, ${profileImage(image.file, 1440, 'webp')} 1440w`} sizes="(max-width: 800px) 100vw, 46vw" />
+                  <img src={profileImage(image.file, 1440, 'jpg')} alt="" width={image.width} height={image.height} loading="lazy" style={`--focal-point:${image.focalPoint}`} />
+                </picture>
+              );
+            })}
+            <span data-story-count>01 / 03</span>
+          </div>
+        </div>
+        <ol class="name-story__chapters">
+          {profileStory.nameChapters.map((chapter, index) => (
+            <li class:list={['name-story__chapter', { 'is-active': index === 0 }]} data-story-step={index} tabindex="0">
+              <span>{chapter.number}</span>
+              <h3>{chapter.title}</h3>
+              <p>{chapter.text}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+
+    <section class="community" id="community" aria-labelledby="community-title" data-community>
+      <header class="community__header">
+        <div>
+          <p class="kicker">05 / Community orbit</p>
+          <h2 id="community-title">Worlds I help build.</h2>
+        </div>
+        <p>Creative work becomes more useful when it helps other people find knowledge, collaborators and a way in.</p>
+      </header>
+      <div class="community__controls" aria-label="Community story controls">
+        <p><span data-community-current>01</span> / {String(milestones.length).padStart(2, '0')}</p>
+        <div>
+          <button type="button" data-community-prev aria-label="Previous community story">←</button>
+          <button type="button" data-community-next aria-label="Next community story">→</button>
+        </div>
+      </div>
+      <div class="community__rail" role="list" tabindex="0" data-community-rail aria-label="Community and practice milestones">
+        {milestones.map((milestone) => {
+          const image = getProfileMedia(milestone.mediaId);
+          return (
+            <article class="milestone" role="listitem">
+              <figure>
+                <picture>
+                  <source type="image/avif" srcset={`${profileImage(image.file, 720, 'avif')} 720w, ${profileImage(image.file, 1440, 'avif')} 1440w`} sizes="(max-width: 800px) 84vw, 42vw" />
+                  <source type="image/webp" srcset={`${profileImage(image.file, 720, 'webp')} 720w, ${profileImage(image.file, 1440, 'webp')} 1440w`} sizes="(max-width: 800px) 84vw, 42vw" />
+                  <img src={profileImage(image.file, 1440, 'jpg')} alt={image.alt} width={image.width} height={image.height} loading="lazy" style={`--focal-point:${image.focalPoint}`} />
+                </picture>
+                <figcaption>{image.caption}</figcaption>
+              </figure>
+              <div class="milestone__body">
+                <p class="milestone__period">{milestone.period}</p>
+                <h3>{milestone.title}</h3>
+                <p class="milestone__role">{milestone.role}</p>
+                <p class="milestone__summary">{milestone.summary}</p>
+                <details>
+                  <summary><span>Read the story</span><b aria-hidden="true">+</b></summary>
+                  <div class="milestone__detail">
+                    <p>{milestone.details}</p>
+                    {milestone.sources && (
+                      <ul aria-label="Official sources">
+                        {milestone.sources.map((source) => (
+                          <li><a href={source.url} target="_blank" rel="noreferrer">{source.label} ↗</a></li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </details>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+      <div class="community__frames" aria-label="Selected community moments">
+        {communityFrames.map((image) => (
+          <figure>
+            <picture>
+              <source type="image/avif" srcset={`${profileImage(image.file, 720, 'avif')} 720w, ${profileImage(image.file, 1440, 'avif')} 1440w`} sizes="(max-width: 800px) 72vw, 31vw" />
+              <source type="image/webp" srcset={`${profileImage(image.file, 720, 'webp')} 720w, ${profileImage(image.file, 1440, 'webp')} 1440w`} sizes="(max-width: 800px) 72vw, 31vw" />
+              <img src={profileImage(image.file, 1440, 'jpg')} alt={image.alt} width={image.width} height={image.height} loading="lazy" style={`--focal-point:${image.focalPoint}`} />
+            </picture>
+            <figcaption><span>{image.caption}</span><span>© {image.credit}</span></figcaption>
+          </figure>
+        ))}
+      </div>
+      <div class="community__cta">
+        <p>Speaking · Workshops · Creative collaboration</p>
+        <a href={collaborationHref}><span>Invite me to speak or collaborate</span><b aria-hidden="true">↗</b></a>
       </div>
     </section>
 
     <section class="contact" id="contact" aria-labelledby="contact-title">
-      <p class="kicker">05 / New business</p>
+      <p class="kicker">06 / New business</p>
       <h2 id="contact-title">Have a world<br />worth framing?</h2>
       <div class="focus-game" data-focus-game>
         <p class="focus-game__instruction"><span>Frame the shot</span> Move the reticle into focus, or book directly.</p>
@@ -180,11 +298,14 @@ const bookingHref = `mailto:${siteConfig.bookingEmail}?subject=${encodeURICompon
         </div>
         <p class="sr-only" role="status" aria-live="polite" data-focus-status>Booking link ready.</p>
       </div>
-      <a class="contact__instagram" href={siteConfig.instagramUrl} target="_blank" rel="noreferrer">Prefer Instagram? Send a DM ↗</a>
+      <div class="contact__secondary">
+        <a href={collaborationHref}>Speaking or community collaboration ↗</a>
+        <a href={siteConfig.instagramUrl} target="_blank" rel="noreferrer">Prefer Instagram? Send a DM ↗</a>
+      </div>
       <div class="contact__footer">
         <p>{siteConfig.name}<br /><a href={bookingHref}>{siteConfig.bookingEmail}</a></p>
         <p>Cinematography<br />Photography<br />Digital experiences</p>
-        <p>Selected works archive<br />Accra · Worldwide</p>
+        <p>Selected works archive<br />Gaborone · Worldwide</p>
       </div>
       <div class="contact__marquee" aria-hidden="true">
         <span>KWASI AD — MAKE THE MOMENT LAST — </span><span>KWASI AD — MAKE THE MOMENT LAST — </span>
