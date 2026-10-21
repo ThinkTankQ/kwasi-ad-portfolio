@@ -1,0 +1,62 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Nav from '../../components/Nav.astro';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects');
+  return projects.map((project) => ({ params: { slug: project.id }, props: { project } }));
+}
+
+const { project } = Astro.props;
+const { Content } = await render(project);
+const allProjects = (await getCollection('projects')).sort((a, b) => a.data.featuredOrder - b.data.featuredOrder);
+const currentIndex = allProjects.findIndex((item) => item.id === project.id);
+const nextProject = allProjects[(currentIndex + 1) % allProjects.length];
+const base = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/`;
+---
+
+<BaseLayout title={`${project.data.title} — Kwasi AD`} description={project.data.summary} image={project.data.cover}>
+  <Nav />
+  <main id="main" class="case-page" style={`--project-accent:${project.data.accent}`}>
+    <section class="case-hero">
+      <a class="case-hero__back" href={`${base}#work`}>← All work</a>
+      <p>{project.data.discipline} / {project.data.year}</p>
+      <h1>{project.data.title}</h1>
+      <div class="case-hero__meta">
+        <p>{project.data.summary}</p>
+        <dl>
+          <div><dt>Client</dt><dd>{project.data.client}</dd></div>
+          <div><dt>Role</dt><dd>{project.data.role}</dd></div>
+          <div><dt>Year</dt><dd>{project.data.year}</dd></div>
+        </dl>
+      </div>
+    </section>
+    <figure class="case-cover">
+      <img src={`${base}${project.data.cover.replace(/^\//, '')}`} alt={`${project.data.title} cover`} />
+    </figure>
+    <section class="case-story">
+      <p class="kicker">The story</p>
+      <div class="prose"><Content /></div>
+    </section>
+    <section class="case-gallery" aria-label={`${project.data.title} gallery`}>
+      {project.data.gallery.map((image, index) => (
+        <figure class:list={[{ wide: index % 3 === 0 }]}>
+          <img src={`${base}${image.replace(/^\//, '')}`} alt={`${project.data.title}, selected frame ${index + 1}`} loading="lazy" />
+          <figcaption>FRAME / 0{index + 1}</figcaption>
+        </figure>
+      ))}
+    </section>
+    <section class="case-credits">
+      <p class="kicker">Credits</p>
+      <ul>{project.data.credits.map((credit) => <li>{credit}</li>)}</ul>
+      {project.data.externalUrl && <a href={project.data.externalUrl} target="_blank" rel="noreferrer">Visit project source ↗</a>}
+    </section>
+    <a class="next-project" href={`${base}work/${nextProject.id}/`}>
+      <span>Next story</span><strong>{nextProject.data.title}</strong><b aria-hidden="true">↗</b>
+    </a>
+  </main>
+  <script>
+    import '../../scripts/site.ts';
+  </script>
+</BaseLayout>

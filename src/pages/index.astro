@@ -1,0 +1,160 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Loader from '../components/Loader.astro';
+import Nav from '../components/Nav.astro';
+import { siteConfig } from '../data/site';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.featuredOrder - b.data.featuredOrder);
+const base = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/`;
+const media = [
+  { image: 'afrofuture-nigeria.jpg', label: 'Campaign worlds', meta: 'AfroFuture / Visual content', project: projects[1] },
+  { image: 'aerial-collective.jpg', label: 'Air studies', meta: 'Selected film / Aerial', project: projects[2] },
+  { image: 'afrofuture-ghana.jpg', label: 'Culture systems', meta: 'AfroFuture / Digital', project: projects[0] },
+  { image: 'atlantic-rocks.jpg', label: 'Field notes', meta: 'Atlantic / Photography', project: projects[2] },
+  { image: 'cape-town-flight.jpg', label: 'Above the city', meta: 'Cape Town / Motion', project: projects[2] },
+  { image: 'afrofuture-caribbean.jpg', label: 'Crowd energy', meta: 'AfroFuture / Campaign', project: projects[1] }
+];
+---
+
+<BaseLayout>
+  <Loader />
+  <Nav />
+
+  <main id="main">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero__noise" aria-hidden="true"></div>
+      <div class="hero__eyebrow">
+        <span>Multidisciplinary creative</span>
+        <span>Available worldwide</span>
+      </div>
+      <div class="hero__frame">
+        <img src={`${base}images/kwasi-portrait.jpg`} alt="Portrait of Kwasi AD seated at a creative industry event" data-preload />
+        <div class="hero__frame-label"><span>Portrait / 001</span><span>© KWASI AD ARCHIVE</span></div>
+      </div>
+      <h1 id="hero-title" class="hero__title">
+        <span class="sr-only">Kwasi AD</span>
+        <span aria-hidden="true">KWASI</span>
+        <span aria-hidden="true">AD</span>
+      </h1>
+      <p class="hero__statement">Stories live between the frame<br />and the feeling.</p>
+      <a class="hero__cta magnetic" href="#contact"><span>Book a project</span><b aria-hidden="true">↘</b></a>
+      <div class="hero__disciplines" aria-label="Disciplines">
+        {siteConfig.disciplines.map((item, index) => <span><sup>0{index + 1}</sup>{item}</span>)}
+      </div>
+      <div class="scroll-cue" aria-hidden="true"><span></span>Scroll to explore</div>
+    </section>
+
+    <section class="filmstrip section-dark" id="work" aria-labelledby="work-title">
+      <header class="section-heading">
+        <p>01 / Selected work</p>
+        <h2 id="work-title">Three stories.<br />One evolving practice.</h2>
+      </header>
+      <div class="filmstrip__rail" role="list">
+        {projects.map((project, index) => (
+          <article class="project-card" role="listitem" style={`--accent:${project.data.accent}`}>
+            <a href={`${base}work/${project.id}/`} aria-label={`View ${project.data.title}`}>
+              <div class="project-card__image">
+                <img src={`${base}${project.data.cover.replace(/^\//, '')}`} alt="" data-preload loading={index === 0 ? 'eager' : 'lazy'} />
+                <span class="project-card__index">0{index + 1}</span>
+                <span class="project-card__view">View story ↗</span>
+              </div>
+              <div class="project-card__meta">
+                <h3>{project.data.title}</h3>
+                <p>{project.data.role}</p>
+                <p>{project.data.year}</p>
+              </div>
+            </a>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="collage" aria-labelledby="collage-title" data-collage>
+      <div class="collage__marks" aria-hidden="true"><span>+</span><span>+</span><span>+</span><span>+</span></div>
+      <header class="collage__header">
+        <p>02 / Enter the archive</p>
+        <p>Photography · Film · Digital</p>
+      </header>
+      <div class="collage__title" aria-hidden="true">
+        <span>SELECTED</span><span>SELECTED</span><span>WORK</span>
+      </div>
+      <h2 id="collage-title" class="sr-only">Selected work archive</h2>
+      <div class="collage__block" aria-hidden="true"></div>
+      <div class="card-fan" role="list" aria-label="Selected projects">
+        {media.slice(0, 5).map((item, index) => (
+          <a class="fan-card" href={`${base}work/${item.project.id}/`} role="listitem" style={`--card:${index}`}>
+            <img src={`${base}images/${item.image}`} alt={`${item.label} — ${item.meta}`} loading="lazy" />
+            <span><b>{item.label}</b><small>{item.meta}</small></span>
+          </a>
+        ))}
+      </div>
+      <p class="collage__instruction">Drag the story forward<br />or follow what catches your eye.</p>
+    </section>
+
+    <section class="constellation" aria-labelledby="constellation-title" data-constellation>
+      <div class="constellation__backdrop" aria-hidden="true">
+        <img src={`${base}images/kwasi-portrait.jpg`} alt="" loading="lazy" />
+      </div>
+      <header class="constellation__header">
+        <p>03 / Work constellation</p>
+        <button type="button" data-archive-toggle aria-expanded="false">
+          <span class="open-label">Expand archive</span><span class="close-label">Scatter archive</span><b aria-hidden="true">↗</b>
+        </button>
+      </header>
+      <h2 id="constellation-title">A practice built<br />across formats.</h2>
+      <div class="constellation__field" role="list">
+        {media.map((item, index) => (
+          <a
+            class="orbit-item"
+            href={`${base}work/${item.project.id}/`}
+            role="listitem"
+            style={`--x:${[10, 68, 34, 78, 18, 56][index]}%;--y:${[32, 24, 62, 68, 77, 46][index]}%;--delay:${index * -0.7}s`}
+          >
+            <img src={`${base}images/${item.image}`} alt="" loading="lazy" />
+            <span><b>{item.label}</b><small>{item.meta}</small></span>
+          </a>
+        ))}
+      </div>
+      <p class="constellation__focus" data-constellation-focus aria-live="polite">Move through the work</p>
+    </section>
+
+    <section class="profile" id="profile" aria-labelledby="profile-title">
+      <div class="profile__portrait">
+        <img src={`${base}images/kwasi-portrait.jpg`} alt="Kwasi AD in a red and checked outfit" loading="lazy" />
+        <span>KWASI AD / PORTRAIT</span>
+      </div>
+      <div class="profile__copy">
+        <p class="kicker">04 / Profile</p>
+        <h2 id="profile-title">I build visual worlds for culture in motion.</h2>
+        <p>{siteConfig.description}</p>
+        <p>My practice moves between the precision of a designed interface and the instinct of a live frame—always looking for the human pulse inside the spectacle.</p>
+        <dl>
+          <div><dt>Focus</dt><dd>Culture, music, people, place</dd></div>
+          <div><dt>Tools</dt><dd>Camera, drone, edit, interface</dd></div>
+          <div><dt>Based</dt><dd>{siteConfig.location}</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="contact" id="contact" aria-labelledby="contact-title">
+      <p class="kicker">05 / New business</p>
+      <h2 id="contact-title">Have a world<br />worth framing?</h2>
+      <a class="contact__cta magnetic" href={siteConfig.instagramUrl} target="_blank" rel="noreferrer">
+        <span>Start a conversation</span><b aria-hidden="true">↗</b>
+      </a>
+      <div class="contact__footer">
+        <p>{siteConfig.name}<br />{siteConfig.handle}</p>
+        <p>Cinematography<br />Photography<br />Digital experiences</p>
+        <p>Selected works archive<br />Accra · Worldwide</p>
+      </div>
+      <div class="contact__marquee" aria-hidden="true">
+        <span>KWASI AD — MAKE THE MOMENT LAST — </span><span>KWASI AD — MAKE THE MOMENT LAST — </span>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    import '../scripts/site.ts';
+  </script>
+</BaseLayout>

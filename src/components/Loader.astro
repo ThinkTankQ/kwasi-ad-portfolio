@@ -1,0 +1,27 @@
+---
+import { loaderCopy } from '../data/site';
+---
+
+<div class="loader" data-loader aria-hidden="true">
+  <div class="loader__grid" aria-hidden="true">
+    <span>01</span><span>KWASI AD / VISUAL ARCHIVE</span><span>ACCRA — WORLDWIDE</span>
+  </div>
+  <div class="loader__center">
+    <div class="loader__phrase-window">
+      {loaderCopy.map((entry, index) => (
+        <p class:list={['loader__phrase', { 'is-active': index === 0 }]} data-loader-phrase={index} lang={entry.lang}>
+          {entry.text}
+        </p>
+      ))}
+    </div>
+    <p class="loader__wordmark" aria-label="Kwasi AD">
+      {'KWASI AD'.split('').map((letter, index) => (
+        <span style={`--i:${index}`} aria-hidden="true">{letter === ' ' ? '\u00A0' : letter}</span>
+      ))}
+    </p>
+  </div>
+  <div class="loader__progress" aria-hidden="true">
+    <span>LOADING</span><strong data-loader-progress>0</strong><span>%</span>
+  </div>
+</div>
+<p class="sr-only" role="status" aria-live="polite" data-loader-status>Loading Kwasi AD’s portfolio, 0 percent</p>
