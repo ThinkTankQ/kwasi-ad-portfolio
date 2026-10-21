@@ -3,7 +3,7 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Loader from '../components/Loader.astro';
 import Nav from '../components/Nav.astro';
-import { siteConfig } from '../data/site';
+import { creativeTools, siteConfig } from '../data/site';
 
 const projects = (await getCollection('projects')).sort((a, b) => a.data.featuredOrder - b.data.featuredOrder);
 const base = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/`;
@@ -15,6 +15,7 @@ const media = [
   { image: 'cape-town-flight.jpg', label: 'Above the city', meta: 'Cape Town / Motion', project: projects[2] },
   { image: 'afrofuture-caribbean.jpg', label: 'Crowd energy', meta: 'AfroFuture / Campaign', project: projects[1] }
 ];
+const bookingHref = `mailto:${siteConfig.bookingEmail}?subject=${encodeURIComponent(siteConfig.bookingSubject)}`;
 ---
 
 <BaseLayout>
@@ -50,7 +51,14 @@ const media = [
         <p>01 / Selected work</p>
         <h2 id="work-title">Three stories.<br />One evolving practice.</h2>
       </header>
-      <div class="filmstrip__rail" role="list">
+      <div class="filmstrip__controls" aria-label="Selected work controls">
+        <p><span data-rail-current>01</span> / <span>{String(projects.length).padStart(2, '0')}</span></p>
+        <div>
+          <button type="button" data-rail-prev aria-label="Previous project">←</button>
+          <button type="button" data-rail-next aria-label="Next project">→</button>
+        </div>
+      </div>
+      <div class="filmstrip__rail" id="filmstrip-rail" role="list" tabindex="0" aria-label="Selected project stories">
         {projects.map((project, index) => (
           <article class="project-card" role="listitem" style={`--accent:${project.data.accent}`}>
             <a href={`${base}work/${project.id}/`} aria-label={`View ${project.data.title}`}>
@@ -81,20 +89,29 @@ const media = [
       </div>
       <h2 id="collage-title" class="sr-only">Selected work archive</h2>
       <div class="collage__block" aria-hidden="true"></div>
-      <div class="card-fan" role="list" aria-label="Selected projects">
+      <div class="card-fan" role="list" aria-label="Draggable selected projects" data-card-stack>
         {media.slice(0, 5).map((item, index) => (
-          <a class="fan-card" href={`${base}work/${item.project.id}/`} role="listitem" style={`--card:${index}`}>
-            <img src={`${base}images/${item.image}`} alt={`${item.label} — ${item.meta}`} loading="lazy" />
+          <a class="fan-card" href={`${base}work/${item.project.id}/`} role="listitem" style={`--card:${index}`} data-stack-card={index}>
+            <img src={`${base}images/${item.image}`} alt={`${item.label} — ${item.meta}`} loading="lazy" draggable="false" />
             <span><b>{item.label}</b><small>{item.meta}</small></span>
           </a>
         ))}
       </div>
-      <p class="collage__instruction">Drag the story forward<br />or follow what catches your eye.</p>
+      <div class="card-fan__controls" aria-label="Portfolio stack controls">
+        <button type="button" data-stack-prev aria-label="Previous portfolio card">←</button>
+        <p><span data-stack-current>03</span> / 05</p>
+        <button type="button" data-stack-next aria-label="Next portfolio card">→</button>
+      </div>
+      <p class="collage__instruction">Drag the focused card<br />or use the arrow controls.</p>
     </section>
 
     <section class="constellation" aria-labelledby="constellation-title" data-constellation>
       <div class="constellation__backdrop" aria-hidden="true">
-        <img src={`${base}images/kwasi-portrait.jpg`} alt="" loading="lazy" />
+        <picture>
+          <source type="image/avif" srcset={`${base}images/dronie-me-960.avif 960w, ${base}images/dronie-me-1600.avif 1600w`} sizes="100vw" />
+          <source type="image/webp" srcset={`${base}images/dronie-me-960.webp 960w, ${base}images/dronie-me-1600.webp 1600w`} sizes="100vw" />
+          <img src={`${base}images/dronie-me.jpg`} alt="" loading="lazy" />
+        </picture>
       </div>
       <header class="constellation__header">
         <p>03 / Work constellation</p>
@@ -110,11 +127,23 @@ const media = [
             href={`${base}work/${item.project.id}/`}
             role="listitem"
             style={`--x:${[10, 68, 34, 78, 18, 56][index]}%;--y:${[32, 24, 62, 68, 77, 46][index]}%;--delay:${index * -0.7}s`}
+            data-orbit-item
           >
             <img src={`${base}images/${item.image}`} alt="" loading="lazy" />
             <span><b>{item.label}</b><small>{item.meta}</small></span>
           </a>
         ))}
+      </div>
+      <div class="creative-dock" aria-hidden="true">
+        {creativeTools.map((tool) => (
+          <span class:list={['tool-icon', `tool-icon--${tool.id}`]} title={tool.label}>
+            <i>{tool.mark}</i>
+          </span>
+        ))}
+      </div>
+      <div class="reference-controls" aria-hidden="true">
+        <span class="reference-control reference-control--expand"><i></i></span>
+        <span class="reference-control reference-control--refresh"><i></i></span>
       </div>
       <p class="constellation__focus" data-constellation-focus aria-live="polite">Move through the work</p>
     </section>
@@ -140,11 +169,20 @@ const media = [
     <section class="contact" id="contact" aria-labelledby="contact-title">
       <p class="kicker">05 / New business</p>
       <h2 id="contact-title">Have a world<br />worth framing?</h2>
-      <a class="contact__cta magnetic" href={siteConfig.instagramUrl} target="_blank" rel="noreferrer">
-        <span>Start a conversation</span><b aria-hidden="true">↗</b>
-      </a>
+      <div class="focus-game" data-focus-game>
+        <p class="focus-game__instruction"><span>Frame the shot</span> Move the reticle into focus, or book directly.</p>
+        <div class="focus-game__stage" data-focus-stage>
+          <div class="focus-reticle" data-focus-reticle aria-hidden="true"><i></i><span>AF</span></div>
+          <div class="focus-game__flash" aria-hidden="true"></div>
+          <a class="contact__cta" href={bookingHref}>
+            <span data-focus-label>Book a project</span><b aria-hidden="true">↗</b>
+          </a>
+        </div>
+        <p class="sr-only" role="status" aria-live="polite" data-focus-status>Booking link ready.</p>
+      </div>
+      <a class="contact__instagram" href={siteConfig.instagramUrl} target="_blank" rel="noreferrer">Prefer Instagram? Send a DM ↗</a>
       <div class="contact__footer">
-        <p>{siteConfig.name}<br />{siteConfig.handle}</p>
+        <p>{siteConfig.name}<br /><a href={bookingHref}>{siteConfig.bookingEmail}</a></p>
         <p>Cinematography<br />Photography<br />Digital experiences</p>
         <p>Selected works archive<br />Accra · Worldwide</p>
       </div>

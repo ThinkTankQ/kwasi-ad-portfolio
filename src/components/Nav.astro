@@ -4,7 +4,7 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/`;
 ---
 
 <header class="site-header" data-header>
-  <a class="monogram" href={base} aria-label="Kwasi AD home">K<span>AD</span></a>
+  <a class="monogram" href={base} aria-label="KAD — Kwasi AD home">K<span>AD</span></a>
   <nav aria-label="Primary navigation">
     <a href={`${base}#work`}>Work</a>
     <a href={`${base}#profile`}>Profile</a>
@@ -14,3 +14,9 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/`;
     <i aria-hidden="true"></i>{siteConfig.availability}
   </a>
 </header>
+
+<nav class="mobile-dock" aria-label="Mobile navigation">
+  <a href={`${base}#work`} data-section-link="work"><span aria-hidden="true">◫</span>Work</a>
+  <a href={`${base}#profile`} data-section-link="profile"><span aria-hidden="true">◎</span>Profile</a>
+  <a href={`${base}#contact`} data-section-link="contact"><span aria-hidden="true">↗</span>Contact</a>
+</nav>
